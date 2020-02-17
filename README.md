@@ -118,7 +118,7 @@ const either = <L, R>(left?: L, right?: R): Either<L, R> => ({
 	chain: <B, C>(f: (x: R) => Either<B, C>) =>
 		exist(right) ? f(right as R) : either<L, R>(left),
 	fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) =>
-		exist(left) ? onLeft(left as L) : onRight(right as R),
+		exist(right) ? onRight(right as R) : onLeft(left as L),
 	inspect: () => (exist(right) ? `Right(${right})` : `Left(${left})`),
 })
 ```
