@@ -84,7 +84,7 @@ First, let's define our Identity Functor:
 interface Identity<A> {
 	value: A
 	map: <B>(f: (x: A) => B) => Identity<B>
-	chain: <B>(f: (x: A) => B) => B
+	chain: <B>(f: (x: A) => Identity<B>) => Identity<B>
 	fold: <B>(f: (x: A) => B) => B
 	inspect: () => string
 }
@@ -92,8 +92,74 @@ interface Identity<A> {
 const identity = <A>(value: A): Identity<A> => ({
 	value,
 	map: <B>(f: (x: A) => B) => identity<B>(f(value)),
-	chain: <B>(f: (x: A) => B) => f(value),
+	chain: <B>(f: (x: A) => Identity<B>) => f(value),
 	fold: <B>(f: (x: A) => B) => f(value),
 	inspect: () => `Identity(${value})`,
 })
 ```
+
+**Work in progress...**
+
+## Either
+
+...
+
+```typescript
+interface Either<L, R> {
+	map: <B>(f: (x: R) => B) => Either<L, B>
+	chain: <B, C>(f: (x: R) => Either<B, C>) => Either<L, R> | Either<B, C>
+	fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) => B | C
+	inspect: () => string
+}
+
+const either = <L, R>(left?: L, right?: R): Either<L, R> => ({
+	map: <B>(f: (x: R) => B) =>
+		exist(right) ? either<L, B>(undefined, f(right as R)) : either<L, B>(left),
+	chain: <B, C>(f: (x: R) => Either<B, C>) =>
+		exist(right) ? f(right as R) : either<L, R>(left),
+	fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) =>
+		exist(left) ? onLeft(left as L) : onRight(right as R),
+	inspect: () => (exist(right) ? `Right(${right})` : `Left(${left})`),
+})
+```
+
+## Applicative
+
+...
+
+```typescript
+// Value is a function:
+const applicative1 = <A, B>(value: (x: A) => B) => ({
+	ap: (x: Identity<A>) => x.map(value),
+})
+
+// Currying A => B => C:
+const applicative2 = <A, B, C>(value: (x: A) => (y: B) => C) => ({
+	ap: (x: A) => applicative1(value(x)),
+})
+
+// Currying A => B => C => D:
+const applicative3 = <A, B, C, D>(value: (x: A) => (y: B) => (z: C) => D) => ({
+	ap: (x: A) => applicative2(value(x)),
+})
+```
+
+## Contributing
+
+1.  Fork it!
+2.  Create your feature branch: git checkout -b my-new-feature
+3.  Commit your changes: git commit -am 'Add some feature'
+4.  Push to the branch: git push origin my-new-feature
+5.  Submit a pull request :D
+
+## License
+
+The MIT License (MIT)
+
+Copyright (c) 2020 Rafael Campos
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
