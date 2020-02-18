@@ -138,7 +138,7 @@ const either = <L, R>(left?: L, right?: R): Either<L, R> => ({
 })
 ```
 
-That serves to handle errors, with some pops up, we skip the other steps in our chain. But also for skipping unnecessary computation, imagine that we have three predicates, but we only need one to be true to pass to the next step. If the first one returns true, we don't need to compute the next two, we skip them and move on in our pipe.
+That serves to handle errors, if some pops up, we skip the other steps in our chain. But also for skipping unnecessary computation, imagine that we have three predicates, but we only need one to be true to pass to the next step. If the first one returns true, we don't need to compute the next two, we skip them and move on in our pipe.
 
 ## Applicative
 
