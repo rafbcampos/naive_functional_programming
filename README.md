@@ -107,8 +107,6 @@ There are five methods here:
 
 Yeap, the `identity` call has the same effect of the `of` method, that is the way to insert the value inside our functor.
 
-**Work in progress...**
-
 ## Either
 
 And how about conditional constructs and error handler? Can functional programming improve that aspect of coding?
