@@ -82,7 +82,6 @@ First, let's define our Identity Functor:
 
 ```typescript
 interface Identity<A> {
-	value: A
 	map: <B>(f: (x: A) => B) => Identity<B>
 	chain: <B>(f: (x: A) => Identity<B>) => Identity<B>
 	fold: <B>(f: (x: A) => B) => B
@@ -90,7 +89,6 @@ interface Identity<A> {
 }
 
 const identity = <A>(value: A): Identity<A> => ({
-	value,
 	map: <B>(f: (x: A) => B) => identity<B>(f(value)),
 	chain: <B>(f: (x: A) => Identity<B>) => f(value),
 	fold: <B>(f: (x: A) => B) => f(value),
@@ -98,11 +96,30 @@ const identity = <A>(value: A): Identity<A> => ({
 })
 ```
 
+There are five methods here:
+
+- **map**: We apply a function to our value and put the result back in a functor to keep composing.
+- **chain**: Imagine that the function that you want to `map` returns another `Identity`. In that case, we'll end up with `Identity(Identity(value))`. Chain flat that, resulting in a single `Identity(value)`.
+- **fold**: It's tough, but sooner or later, our value needs to leave the cozy and secure functor.
+- **inspect**: Friendly console.
+
+> Wait a minute. You said five methods, but there are only four here!
+
+Yeap, the `either` call has the same effect of the `of` method, that is the way to insert the value inside our functor.
+
 **Work in progress...**
 
 ## Either
 
-...
+And how about conditional constructs and error handler? Can functional programming improve that aspect of coding?
+
+Yes, it can!
+
+In this [talk](https://www.youtube.com/watch?v=E8I19uA-wGY) Scott Wlaschin uses this Railway Track model:
+
+![Railway Track Model](https://res.cloudinary.com/alohawav/image/upload/v1581997913/railwayTrackModel_jfnynj.png)
+
+Here we have functions that can return two different things, and we have a functor that can help us with that called Either:
 
 ```typescript
 interface Either<L, R> {
@@ -123,26 +140,55 @@ const either = <L, R>(left?: L, right?: R): Either<L, R> => ({
 })
 ```
 
+That serves to handle errors, with some pops up, we skip the other steps in our chain. But also for skipping unnecessary computation, imagine that we have three predicates, but we only need one to be true to pass to the next step. If the first one returns true, we don't need to compute the next two, we skip them and move on in our pipe.
+
 ## Applicative
 
-...
+I want to go rad and put our curried functions in our pipeline. However, I don't want to `fold` just for that.
+
+To do so, I need to apply functors to functors:
+`F(x => x + 10) -> F(10) = F(20)`.
+
+In the end, we need a method `ap` in a Functor containing a function as value and call that passing another Functor with our expect argument into it:
+`ap: (functor) => functor.map(value)`
+
+A pointed functor with an `ap` method is called **applicative functor**.
+
+Typing that with TypeScript end up being impossible for me (TypeScript does not have higher-kinded types like Haskel, and I got lost within so many letters using HKT like in [fp-ts](https://github.com/gcanti/fp-ts)), so I cheated a little bit:
 
 ```typescript
-// Value is a function:
-const applicative1 = <A, B>(value: (x: A) => B) => ({
-	ap: (x: Identity<A>) => x.map(value),
+interface Applicative<A, B> {
+	ap: (i: Identity<A>) => Identity<B>
+}
+
+interface Applicative2<A, B, C> {
+	ap: (i: Identity<A>) => Applicative<B, C>
+}
+
+interface Applicative3<A, B, C, D> {
+	ap: (i: Identity<A>) => Applicative2<B, C, D>
+}
+
+const applicative = <A, B>(value: (x: A) => B): Applicative<A, B> => ({
+	ap: (i: Identity<A>) => i.map(value),
 })
 
-// Currying A => B => C:
-const applicative2 = <A, B, C>(value: (x: A) => (y: B) => C) => ({
-	ap: (x: A) => applicative1(value(x)),
+const applicative2 = <A, B, C>(
+	value: (x: A) => (y: B) => C
+): Applicative2<A, B, C> => ({
+	ap: (i: Identity<A>) => applicative<B, C>(i.fold(value)),
 })
 
-// Currying A => B => C => D:
-const applicative3 = <A, B, C, D>(value: (x: A) => (y: B) => (z: C) => D) => ({
-	ap: (x: A) => applicative2(value(x)),
+const applicative3 = <A, B, C, D>(
+	value: (x: A) => (y: B) => (z: C) => D
+): Applicative3<A, B, C, D> => ({
+	ap: (i: Identity<A>) => applicative2<B, C, D>(i.fold(value)),
 })
 ```
+
+## TBD
+
+Work in progress...
 
 ## Contributing
 

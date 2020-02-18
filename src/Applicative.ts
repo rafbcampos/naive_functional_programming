@@ -1,18 +1,29 @@
-import { Identity } from './Identity'
+import { Identity } from 'src/Identity'
 
-// Value is a function:
-export const applicative1 = <A, B>(value: (x: A) => B) => ({
-	ap: (x: Identity<A>) => x.map(value),
+export interface Applicative<A, B> {
+	ap: (i: Identity<A>) => Identity<B>
+}
+
+export interface Applicative2<A, B, C> {
+	ap: (i: Identity<A>) => Applicative<B, C>
+}
+
+export interface Applicative3<A, B, C, D> {
+	ap: (i: Identity<A>) => Applicative2<B, C, D>
+}
+
+export const applicative = <A, B>(value: (x: A) => B): Applicative<A, B> => ({
+	ap: (i: Identity<A>) => i.map(value),
 })
 
-// Currying A => B => C:
-export const applicative2 = <A, B, C>(value: (x: A) => (y: B) => C) => ({
-	ap: (x: A) => applicative1(value(x)),
+export const applicative2 = <A, B, C>(
+	value: (x: A) => (y: B) => C
+): Applicative2<A, B, C> => ({
+	ap: (i: Identity<A>) => applicative<B, C>(i.fold(value)),
 })
 
-// Currying A => B => C => D:
 export const applicative3 = <A, B, C, D>(
 	value: (x: A) => (y: B) => (z: C) => D
-) => ({
-	ap: (x: A) => applicative2(value(x)),
+): Applicative3<A, B, C, D> => ({
+	ap: (i: Identity<A>) => applicative2<B, C, D>(i.fold(value)),
 })
