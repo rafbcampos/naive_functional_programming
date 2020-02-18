@@ -105,7 +105,7 @@ There are five methods here:
 
 > Wait a minute. You said five methods, but there are only four here!
 
-Yeap, the `either` call has the same effect of the `of` method, that is the way to insert the value inside our functor.
+Yeap, the `identity` call has the same effect of the `of` method, that is the way to insert the value inside our functor.
 
 **Work in progress...**
 
