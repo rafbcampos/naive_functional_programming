@@ -184,6 +184,34 @@ const applicative3 = <A, B, C, D>(
 })
 ```
 
+Applicative Functors are not only about currying but also they help us parallelism. In a case where we have a couple of fetch calls, and we wrap them in a functor:
+
+```typescript
+const synchronousLongTask = () => {
+	// ...
+	return identity('txt')
+}
+
+// sequential:
+synchronousLongTask().chain(t1 =>
+	synchronousLongTask().map(t2 => synchronousLongTask().map(t3 => t1 + t2 + t3))
+)
+
+// We have this waterfall effect, where we need to wait for the first `synchronousLongTask`
+// return to call the next one and so on.
+// But in our example, the calls do not depend on the predecessor.
+
+// They can be called in parallel:
+
+const composeTxt = (txt1: string) => (txt2: string) => (txt3: string) =>
+	txt1 + txt2 + txt3
+
+applicative3(composeTxt)
+	.ap(synchronousLongTask())
+	.ap(synchronousLongTask())
+	.ap(synchronousLongTask())
+```
+
 ## TBD
 
 Work in progress...
