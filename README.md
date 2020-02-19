@@ -212,6 +212,50 @@ applicative3(composeTxt)
 	.ap(synchronousLongTask())
 ```
 
+## Natural Transformation
+
+We saw that we could pass a function to a map method, let's say `a => b`, and get `F(a) => F(b)`. But how about on the Functor itself (`F(a) => G(a)`)?
+
+Let's use our Identity and Either:
+
+```typescript
+const identityToEither = <A>(i: Identity<A>) =>
+	i.fold(x => either<undefined, A>(undefined, x))
+```
+
+In this point we already know that we need to respect some law to fit in the predictable Category world:
+
+`nt(x).map(f) === nt(x.map(f))`
+
+So, we need to put our function to the test:
+
+```typescript
+identityToEither(identity(10))
+	.map(x => x * x)
+	.inspect() === identityToEither(identity(10).map(x => x * x)).inspect()
+
+// true (fireworks)
+```
+
+Finally, now I can understand this:
+
+![Natural Transformation](https://res.cloudinary.com/alohawav/image/upload/v1582081476/nt_nxaoek.png)
+
+Follow the path ➡️ ⬇️ (red) is equal to go ⬇️ ➡️ (blue):
+
+`nt(F(a).map(f)) === nt(F(a)).map(f) === G`
+
+And of course, there is some more pro stuff like:
+
+⬇️ ↘️ ➡️ + P
+⬆️ ⬆️ ⬇️ ⬇️ ⬅️ ➡️ ⬅️ ➡️ + B + A + Start
+
+> Haha! Pretty funny, it's a Konami Code, haha... But wait, I'm losing focus here. Why do I want to transform a functor in another?
+
+You don't want nail with a saw or cut a log with a hammer. In the same way, you use different functors for each type of task.
+
+However, the functions of your pipeline can return different functors, and we have Natural Transformations at our disposal to fit them in a new functor when we need the methods that it has to offer. Like we took a battery from a drilling machine into a circular saw (Okay, enough of analogies).
+
 ## TBD
 
 Work in progress...
