@@ -256,9 +256,32 @@ You don't want nail with a saw or cut a log with a hammer. In the same way, you 
 
 However, the functions of your pipeline can return different functors, and we have Natural Transformations at our disposal to fit them in a new functor when we need the methods that it has to offer. Like we took a battery from a drilling machine into a circular saw (Okay, enough of analogies).
 
-## TBD
+## Isomorphism
 
-Work in progress...
+Ok by now, we're starting to get the gist of morphisms (arrows), so let's put some spicy on it.
+
+We saw a bunch of arrows from `a` to `b`. But what if we also have a morphism from `b` to `a`?
+
+In this case, **they are no equal, but isomorphic**. We can map `a -> b` and `b -> a` **without losing information**.
+
+> What?!
+
+I guess an example it's better than all my gibresh:
+
+```typescript
+const insert = x => [x]
+const extract = a => a[0]
+
+const start = 10
+const advanceOneSpace = insert(start)
+const goBackOneSpace = extract(advanceOneSpace)
+
+start === goBackOneSpace // True - I guess we're a stuck in this Monopoly game.
+```
+
+That gives us the ability to use a natural transformation to temporarily put our value in another Functor, solve a task that suits its peculiarities, and then put it back into the original Functor.
+
+## Work in progress...
 
 ## Contributing
 
