@@ -248,6 +248,7 @@ Follow the path ➡️ ⬇️ (red) is equal to go ⬇️ ➡️ (blue):
 And of course, there is some more pro stuff like:
 
 ⬇️ ↘️ ➡️ + P
+
 ⬆️ ⬆️ ⬇️ ⬇️ ⬅️ ➡️ ⬅️ ➡️ + B + A + Start
 
 > Haha! Pretty funny, it's a Konami Code, haha... But wait, I'm losing focus here. Why do I want to transform a functor in another?
