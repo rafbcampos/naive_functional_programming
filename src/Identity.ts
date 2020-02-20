@@ -1,3 +1,9 @@
+import { HKT } from './HKT'
+
+export const URI = 'Identity'
+
+export type URI = typeof URI
+
 export interface Identity<A> {
 	map: <B>(f: (x: A) => B) => Identity<B>
 	chain: <B>(f: (x: A) => Identity<B>) => Identity<B>
@@ -11,3 +17,11 @@ export const identity = <A>(value: A): Identity<A> => ({
 	fold: <B>(f: (x: A) => B) => f(value),
 	inspect: () => `Identity(${value})`,
 })
+
+declare module './HKT' {
+	interface URI2HKT<A> {
+		Identity: Identity<A> // maps the type literal "Identity" to the type `Identity`
+	}
+}
+
+const x: HKT<'Identity', number> = identity(10)

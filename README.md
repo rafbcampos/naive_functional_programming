@@ -282,6 +282,13 @@ start === goBackOneSpace // True - I guess we're a stuck in this Monopoly game.
 
 That gives us the ability to use a natural transformation to temporarily put our value in another Functor, solve a task that suits its peculiarities, and then put it back into the original Functor.
 
+## Higher Kinded Types
+
+Till now, I'm dodging the TS inability to deal with generics of generics (F<A<B>>).
+
+Here a explanation of what is HKT and how we can simulate its behavior in TS: [Higher kinded types in TypeScript, static and fantasy land by gcanti](https://medium.com/@gcanti/higher-kinded-types-in-typescript-static-and-fantasy-land-d41c361d0dbe).
+So it seems it's time to try that out.
+
 ## Work in progress...
 
 ## Contributing
