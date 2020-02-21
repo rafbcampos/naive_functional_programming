@@ -253,7 +253,7 @@ And of course, there is some more pro stuff like:
 
 > Haha! Pretty funny, it's a Konami Code, haha... But wait, I'm losing focus here. Why do I want to transform a functor in another?
 
-You don't want nail with a saw or cut a log with a hammer. In the same way, you use different functors for each type of task.
+You don't want to hammer a nail with a saw or cut a log with a hammer. In the same way, you use different functors for each type of task.
 
 However, the functions of your pipeline can return different functors, and we have Natural Transformations at our disposal to fit them in a new functor when we need the methods that it has to offer. Like we took a battery from a drilling machine into a circular saw (Okay, enough of analogies).
 
