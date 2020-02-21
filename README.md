@@ -295,7 +295,7 @@ So now we have a Record of types. We can define them using HKT<[Identifier], [Ty
 ```typescript
 // Higher Kinded Types
 
-// Single value:
+// Unique type:
 export interface URI2HKT<A> {}
 export type URIS = keyof URI2HKT<any>
 export type HKT<URI extends URIS, A> = URI2HKT<A>[URI]
