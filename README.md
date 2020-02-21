@@ -24,7 +24,7 @@ Instead of walking in the streets trying to draw a map, we use a satellite pictu
 
 We have these **objects** and the **relations** between them, and we're forbidden to look into the objects (not because we want to punish ourselves, but to create structures that serve to more than one type of category), so **all our assertions need to be inferred from those relations, called morphisms**.
 
-> Let's stop right there. Why in the earth I need to engage in this math theory?! I'm not trying to understand the entire world through math. I want to become a better programmer.
+> Let's stop right there. Why on earth I need to engage in this math theory?! I'm not trying to understand the entire world through math. I want to become a better programmer.
 
 Ok, I'm with you on that. But do you remember that those math guys have this constraint of only seeing things through their relations? If you take **types as a Category and function as morphisms**, you end up with a bunch of knowledge on how to deal with functions and can apply that to make your code better. I'm talking about **composition and predictability**.
 
@@ -38,19 +38,19 @@ There is a bunch of rules to check a function as pure, but I'll stick with: **re
 
 > I knew it! I work with Web Apps, my life is side effects: DOM manipulation, users inputs, Ajax calls, are you crazy?!
 
-Relax, take a deep breath 🧘‍♂️. We'll continue to do all that, believe in me.
+Relax, take a deep breath 🧘‍♂️. We'll continue to do all that, believe me.
 
 Also, we need **currying** that's a **partial application** where the end function always expect one argument (function arity 1). Languages like Haskel have that into it, but with JS we need to create or use a lib for that.
 
 Ok, but there are more than pure functions. I'll throw a bunch of **loose definitions** here, so we can feel more comfortable when I talk Category Theory terms (and of course, it's valid to remember that's what I got about them):
 
-- Functors = Container for a value that implements a `map` (not related to iteration, but applying a function on its value) **preserving composition** (`F(x).map(f).map(g) === F(x).map(g(f(x)))`) and **identity** (`F(x).map(x => x) = F(x)`).
+- Functors = A type that implements a `map` (not related to iteration, but applying a function on its value) **preserving composition** (`F(x).map(f).map(g) === F(x).map(g(f(x)))`) and **identity** (`F(x).map(x => x) = F(x)`).
 
 - Pointed Functors = Functor that implements an `of` method (that is a way to throw a value inside our container).
 
 - Applicative Functors = Functor that implements the method `ap` (apply the value of one container on the value of another container, remember, the value can be a function).
 
-- Semigroups = A container that implements a `concat` method that is **associativity**, that means `'Hello' + ('World' + '!') = ('Hello' + 'World') + '!'`
+- Semigroups = A type that implements a `concat` method that is **associativity**, that means `'Hello' + ('World' + '!') = ('Hello' + 'World') + '!'`
 
 - Monoids = It's a semigroup that has an `empty` method. In other words, it's safe to work no matter the number of elements: `empty string + 'all fine' = 'all fine'` no errors in our dear console.
 
@@ -62,7 +62,7 @@ Ok, but there are more than pure functions. I'll throw a bunch of **loose defini
 
 I already can see people coming with torches and forks, to punish me for all the nonsense that I put here. But hold your horses. **That's a living document from my learning process, and that's what I get so far**.
 
-> Ok, ok. But I'm starting to loose my interest. Can we see some code? I want to check how to implement all of that!
+> Ok, ok. But I'm starting to lose my interest. Can we see some code? I want to check how to implement all of that!
 
 Fair enough. Let's move on.
 
@@ -286,7 +286,7 @@ That gives us the ability to use a natural transformation to temporarily put our
 
 Till now, I'm dodging the TS inability to deal with generics of generics (F< A < B >>).
 
-Here a explanation of what is HKT and how we can simulate its behavior in TS: [Higher kinded types in TypeScript, static and fantasy land by gcanti](https://medium.com/@gcanti/higher-kinded-types-in-typescript-static-and-fantasy-land-d41c361d0dbe).
+Here an explanation of what is HKT and how we can simulate its behavior in TS: [Higher kinded types in TypeScript, static and fantasy land by gcanti](https://medium.com/@gcanti/higher-kinded-types-in-typescript-static-and-fantasy-land-d41c361d0dbe).
 
 It seems it's time to try that out:
 
