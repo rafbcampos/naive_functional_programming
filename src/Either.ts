@@ -1,5 +1,7 @@
 import { exist } from './utils'
 
+export const URI = 'Either'
+
 export interface Either<L, R> {
 	map: <B>(f: (x: R) => B) => Either<L, B>
 	chain: <B, C>(f: (x: R) => Either<B, C>) => Either<L, R> | Either<B, C>
@@ -16,3 +18,9 @@ export const either = <L, R>(left?: L, right?: R): Either<L, R> => ({
 		exist(right) ? onRight(right as R) : onLeft(left as L),
 	inspect: () => (exist(right) ? `Right(${right})` : `Left(${left})`),
 })
+
+declare module './HKT' {
+	interface URI2HKT2<A, B> {
+		Either: Either<A, B>
+	}
+}

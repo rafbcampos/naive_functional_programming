@@ -284,10 +284,67 @@ That gives us the ability to use a natural transformation to temporarily put our
 
 ## Higher Kinded Types
 
-Till now, I'm dodging the TS inability to deal with generics of generics (F<A<B>>).
+Till now, I'm dodging the TS inability to deal with generics of generics (F< A < B >>).
 
 Here a explanation of what is HKT and how we can simulate its behavior in TS: [Higher kinded types in TypeScript, static and fantasy land by gcanti](https://medium.com/@gcanti/higher-kinded-types-in-typescript-static-and-fantasy-land-d41c361d0dbe).
-So it seems it's time to try that out.
+
+It seems it's time to try that out:
+
+So now we have a Record of types. We can define them using HKT<[Identifier], [Type]> for functors holding values from a single type. Or HKT<[Identifier], [TypeA], [TypeB]> for functors that can hold A|B.
+
+```typescript
+// Higher Kinded Types
+
+// Single value:
+export interface URI2HKT<A> {}
+export type URIS = keyof URI2HKT<any>
+export type HKT<URI extends URIS, A> = URI2HKT<A>[URI]
+
+// A | B:
+export interface URI2HKT2<A, B> {}
+export type URIS2 = keyof URI2HKT2<any, any>
+export type HKT2<URI extends URIS2, A, B> = URI2HKT2<A, B>[URI]
+```
+
+Like gcanti show in his Medium, I'm using [Module Augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation) to add each one of my functors:
+
+```typescript
+// src/Identity.ts:
+declare module './HKT' {
+	interface URI2HKT<A> {
+		Identity: Identity<A>
+	}
+}
+
+// src/Either.ts:
+declare module './HKT' {
+	interface URI2HKT2<A, B> {
+		Either: Either<A, B>
+	}
+}
+```
+
+With that, I changed my first version of Applicative, that only can handle Identity Functors, for any Functor A, and create a new Applicative2 to deal with Functor A|B:
+
+```typescript
+// src/Applicative.ts:
+export interface Applicative<A, B> {
+	ap: <F extends URIS>(fa: HKT<F, A>) => HKT<F, B>
+}
+
+export const applicative = <A, B>(value: (x: A) => B): Applicative<A, B> => ({
+	ap: <F extends URIS>(fa: HKT<F, A>) => fa.map(value),
+})
+
+// src/Applicative2.ts:
+export interface Applicative2<A, B> {
+	ap: <F extends URIS2, L>(fea: HKT2<F, L, A>) => HKT2<F, L, B>
+}
+
+export const applicative2 = <A, B>(value: (x: A) => B): Applicative2<A, B> => ({
+	ap: <F extends URIS2, L>(fea: HKT2<F, L, A>) => fea.map(value),
+})
+```
 
 ## Work in progress...
 

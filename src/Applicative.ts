@@ -1,30 +1,31 @@
 import { URIS, HKT } from './HKT'
 
+// Applicatives for Functor<A>:
+
 export interface Applicative<A, B> {
-	ap: <F extends URIS>(fab: HKT<F, A>) => HKT<F, B>
+	ap: <F extends URIS>(fa: HKT<F, A>) => HKT<F, B>
 }
 
-export interface Applicative2<A, B, C> {
-	ap: <F extends URIS>(fab: HKT<F, A>) => Applicative<B, C>
+export interface ApplicativeC2<A, B, C> {
+	ap: <F extends URIS>(fa: HKT<F, A>) => Applicative<B, C>
 }
 
-export interface Applicative3<A, B, C, D> {
-	ap: <F extends URIS>(fab: HKT<F, A>) => Applicative2<B, C, D>
+export interface ApplicativeC3<A, B, C, D> {
+	ap: <F extends URIS>(fa: HKT<F, A>) => ApplicativeC2<B, C, D>
 }
 
 export const applicative = <A, B>(value: (x: A) => B): Applicative<A, B> => ({
-	ap: <F extends URIS>(fab: HKT<F, A>) => fab.map(value),
+	ap: <F extends URIS>(fa: HKT<F, A>) => fa.map(value),
 })
 
 export const applicative2 = <A, B, C>(
 	value: (x: A) => (y: B) => C
-): Applicative2<A, B, C> => ({
-	ap: <F extends URIS>(fab: HKT<F, A>) => applicative<B, C>(fab.fold(value)),
+): ApplicativeC2<A, B, C> => ({
+	ap: <F extends URIS>(fa: HKT<F, A>) => applicative<B, C>(fa.fold(value)),
 })
 
 export const applicative3 = <A, B, C, D>(
 	value: (x: A) => (y: B) => (z: C) => D
-): Applicative3<A, B, C, D> => ({
-	ap: <F extends URIS>(fab: HKT<F, A>) =>
-		applicative2<B, C, D>(fab.fold(value)),
+): ApplicativeC3<A, B, C, D> => ({
+	ap: <F extends URIS>(fa: HKT<F, A>) => applicative2<B, C, D>(fa.fold(value)),
 })
