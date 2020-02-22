@@ -352,7 +352,7 @@ Bear with me. That will be a crazy trip.
 
 I was researching about I/O. Especially how to fit user inputs (that can be everything) and system outputs (functions that return void) in our functional world.
 
-Fist, I find articles assuming that's a side effect, and I/O returns a thunk (delayed calculation). So that serves as a flag (I'll leave the predictable world and go rad, so only call me in a safe place).
+First, I find articles assuming that's a side effect, and I/O returns a thunk (delayed calculation). So that serves as a flag (**I'll leave the predictable world and go rad, so only call me in a safe place**).
 
 However, I find a different approach to this problem:
 
@@ -366,13 +366,14 @@ type IO = <World>(w: World) => World
 
 ![math](https://media.giphy.com/media/26xBI73gWquCBBCDe/giphy.gif)
 
+
 It's like instead of `any` we had a type `everythin` and from it we can extract the user input, or insert a `console.log`.
 
 > I'm not even bothering to discuss the `state of World` part, but when I use I/O in Haskell, I'm not passing anything to I/O.
 
 Well, what if you are doing it, but Haskell hides that from you?
 
-> Ok, but why?
+> Why?
 
 Unless we're dealing with the multi-dimension scenario, you have a single World that is being modified and passed to another function.
 
