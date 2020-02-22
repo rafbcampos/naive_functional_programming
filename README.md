@@ -367,7 +367,7 @@ type IO = <World>(w: World) => World
 ![math](https://media.giphy.com/media/26xBI73gWquCBBCDe/giphy.gif)
 
 
-It's like instead of `any` we had a type `everythin` and from it we can extract the user input, or insert a `console.log`.
+It's like instead of `any` we had a type `everything` and from it we can extract the user input, or insert a `console.log`.
 
 > I'm not even bothering to discuss the `state of World` part, but when I use I/O in Haskell, I'm not passing anything to I/O.
 
