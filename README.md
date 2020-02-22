@@ -346,6 +346,62 @@ export const applicative2 = <A, B>(value: (x: A) => B): Applicative2<A, B> => ({
 })
 ```
 
+## I/O
+
+Bear with me. That will be a crazy trip.
+
+I was researching about I/O. Especially how to fit user inputs (that can be everything) and system outputs (functions that return void) in our functional world.
+
+Fist, I find articles assuming that's a side effect, and I/O returns a thunk (delayed calculation). So that serves as a flag (I'll leave the predictable world and go rad, so only call me in a safe place).
+
+However, I find a different approach to this problem:
+
+In this [video](https://www.youtube.com/watch?v=fCoQb-zqYDI), Tsoding reimplements the I/O monad, trying to answer that same question.
+
+Maybe we should change or perspective over the problem. Would a function that receives the state of the World and returns the state of the World be pure?
+
+```typescript
+type IO = <World>(w: World) => World
+```
+
+![math](https://media.giphy.com/media/26xBI73gWquCBBCDe/giphy.gif)
+
+It's like instead of `any` we had a type `everythin` and from it we can extract the user input, or insert a `console.log`.
+
+> I'm not even bothering to discuss the `state of World` part, but when I use I/O in Haskell, I'm not passing anything to I/O.
+
+Well, what if you are doing it, but Haskell hides that from you?
+
+> Ok, but why?
+
+Unless we're dealing with the multi-dimension scenario, you have a single World that is being modified and passed to another function.
+
+World1 -> (someOperation) -> World2 -> (someOperation) -> World3
+
+So we're not allowed to reuse World1. To prevent the user from doing that, Haskell makes the World inaccessible for the user.
+
+Either way, going into the crazy World thing, or only deferring the evaluation of a side effect, we can have segments os our code, where we only deal with pure functions and points where the I/O (synchronous), Task (asynchronous) side effect happens.
+
+At the end (at least till the point I understand it), I/O is the same as creating a function to receive user input or read a file that returns Identity or Either:
+
+```typescript
+const unsafe = (): Either<string, number> => {
+	// ex.: get user input, parse to an Int or return 'error'
+}
+
+const safe = (input: Either<string, number>) => {
+	input
+		.map(x => x + 10)
+		.map(x => x * x)
+		.fold(
+			x => x,
+			x => x
+		)
+}
+
+safe(unsafe())
+```
+
 ## Work in progress...
 
 ## Contributing
