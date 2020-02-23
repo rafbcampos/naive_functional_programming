@@ -381,7 +381,7 @@ World1 -> (someOperation) -> World2 -> (someOperation) -> World3
 
 So we're not allowed to reuse World1. To prevent the user from doing that, Haskell makes the World inaccessible for the user.
 
-Either way, going into the crazy World thing, or only deferring the evaluation of a side effect, we can have segments os our code, where we only deal with pure functions and points where the I/O (synchronous), Task (asynchronous) side effect happens.
+Either way, going into the crazy World thing, or only deferring the evaluation of a side effect, we can have segments in our code, where we only deal with pure functions and points where the I/O (synchronous) or Task (asynchronous) side effect happens.
 
 At the end (at least till the point I understand it), I/O is the same as creating a function to receive user input or read a file that returns Identity or Either:
 
