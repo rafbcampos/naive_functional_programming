@@ -366,7 +366,6 @@ type IO = <World>(w: World) => World
 
 ![math](https://media.giphy.com/media/26xBI73gWquCBBCDe/giphy.gif)
 
-
 It's like instead of `any` we had a type `everything` and from it we can extract the user input, or insert a `console.log`.
 
 > I'm not even bothering to discuss the `state of World` part, but when I use I/O in Haskell, I'm not passing anything to I/O.
@@ -402,6 +401,76 @@ const safe = (input: Either<string, number>) => {
 
 safe(unsafe())
 ```
+
+## Algebraic Data Types
+
+Following [this Bartosz's talk](https://www.youtube.com/watch?v=LkqTLJK2API&list=WL), we have four algebraic data types:
+
+- Unit
+- Products
+- Sums
+- Exponentials
+
+Their names correspond to the number of possible values:
+
+Taking const setA = [true, false], const setB = [r,g, b]:
+
+- Unit: single value = `void`;
+- products: 6 possible results (2 \* 3) in `pair<A, B>` = `[[true,r],[true,g],[true,b], [false,r],[false,g],[false,b]]`
+- sums: 5 possible results (2 + 3) in `A|B` = `[true, false, r, g, b]`
+- exponentials: 8 possible results (2^3), if we take the function type `B -> A` = `[r => true, r => false, g => true, g => false, b => true, b => false, _ => false, _ => true]`
+
+In type theory, whenever we define a type, we need to say how it's created (introduction) and how to use it (elimination), so let's try that out:
+
+### Products/Conjunctions - pairs, tuples, records
+
+Taking a Pair, as an example, we need two values to create it (intoduction), and `first` and `second` methods give us access to each one of them (elimination):
+
+```typescript
+const pair = <A, B>(a: A) => (b: B) => ({
+	first: a,
+	second: b,
+})
+```
+
+### Sums/Alternatives - Either
+
+Here we have a union type: `A|B`. We can introduce using our naive `either` implementation:
+
+```typescript
+const x = either<string, number>(undefined, 10)
+const y = either<string, number>('error')
+```
+
+And to eliminate/use it we have the `fold` method:
+
+```typescript
+x.fold(console.error, console.log)
+```
+
+### Exponentials/Implication - Function types
+
+We implement them using lambdas `(a: A) => B` and eliminate them calling the function.
+
+### Unit/Truth - Void
+
+It's always available so that you can use it everywhere. And there is no elimination since there is no value in it.
+
+> But how that relates to better programming?
+
+It's all about composing. We compose small functions to perform a complex operation, and we can compose types, to hold complex data.
+
+Scalar types (string, number, boolean) compose in more complex data types, like arrays, or objects. Types that, besides containing a value, bring with them a series of methods.
+
+Algebraic data types are ways to compose types, embeded with algebra laws, that can help us solve complex cases like define List recursively as:
+
+```typescript
+type List<T> = void | { head: T; tail: List<T> }
+```
+
+Which makes sense for a lazily evaluated language as Haskell.
+
+Speaking of that, check out the gvergnaud's implementation using generators: [lazy-list.js](https://gist.github.com/gvergnaud/6e9de8e06ef65e65f18dbd05523c7ca9).
 
 ## Work in progress...
 
