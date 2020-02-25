@@ -30,6 +30,43 @@ Ok, I'm with you on that. But do you remember that those math guys have this con
 
 So the main goal is to write **code that is predictable and easy to reason about**, and we can get that if we fit our functions and data structures into the Category Theory laws.
 
+## Composition
+
+Category Theory is all about composition. We only have the morphism/arrows/functions to look at, since we're not allowed to check out the object's properties. So all the theory is based on these arrows and how to compose them.
+
+The most common graphic representation we get when we start to search for Category Theory is:
+
+![Composition](https://res.cloudinary.com/alohawav/image/upload/v1582603319/Screen_Shot_2020-02-24_at_10.00.52_PM_ydxc0b.png)
+
+If we have a function from A to B and another one from B to C, we must have a function A to C:
+
+```typescript
+const f = (x: string) => x.length > 0
+const g = (x: boolean) => (x ? 1 : 0)
+// Composing g after f:
+const h = (x: string) => g(f(x))
+```
+
+And there is some laws:
+
+### Associativity
+
+Taking:
+
+```typescript
+type f = <A, B>(x: A) => B
+type g = <B, C>(x: B) => C
+type h = <C, D>(x: C) => D
+```
+
+We have: `h . (g . f) == (h . g) . f == h . g . f`
+
+After all it all translates to `x => h(g(f(x)))`
+
+### Identity
+
+For every object, there is always a function that returns itself (identity): `id = x => x`
+
 ## Tools
 
 First, we need to use **pure functions**.
