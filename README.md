@@ -16,6 +16,31 @@ First, and that is worth even if you do not keep reading to the end, check this 
 
 Now that I pointed you to people who know what they're talking about, I'm free to throw here that stuff that is in my head while I'm trying to figure that out.
 
+**Table of content**
+
+- [A naive approach to functional programming](#a-naive-approach-to-functional-programming)
+  - [Some real functional programming content](#some-real-functional-programming-content)
+  - [What?! Why?!](#what?!-why?!)
+  - [Composition](#composition)
+    - [Associativity](#associativity)
+    - [Identity](#identity)
+  - [Tools](#tools)
+  - [Identity Functor](#identity-functor)
+  - [Either](#either)
+  - [Applicative](#applicative)
+  - [Natural Transformation](#natural-transformation)
+  - [Isomorphism](#isomorphism)
+  - [Higher Kinded Types](#higher-kinded-types)
+  - [I/O](#i/o)
+  - [Algebraic Data Types](#algebraic-data-types)
+    - [Products/Conjunctions - pairs, tuples, records](#products-conjunctions---pairs--tuples--records)
+    - [Sums/Alternatives - Either](#sums-alternatives---either)
+    - [Exponentials/Implication - Function types](#exponentials-implication---function-types)
+    - [Unit/Truth - Void](#unit-truth---void)
+  - [State Monad](#state-monad)
+  - [Contributing](#contributing)
+  - [License](#license)
+
 ## What?! Why?!
 
 As far as I understand, Category Theory is a way to try to structure things through abstraction.
@@ -508,6 +533,79 @@ type List<T> = void | { head: T; tail: List<T> }
 Which makes sense for a lazily evaluated language as Haskell.
 
 Speaking of that, check out the gvergnaud's implementation using generators: [lazy-list.js](https://gist.github.com/gvergnaud/6e9de8e06ef65e65f18dbd05523c7ca9).
+
+## State Monad
+
+Finally, let's talk about the state.
+
+We saw that composition creates those pipes through which we pass our values and receive the results after they are processed.
+
+But what if they need a state besides their inputs to run?
+
+Of course, we'll not rely on a global variable. We're functional programmers (or at least we wish). Give us some credit.
+
+There is a way to keep all pure. We need to pass the state as input.
+
+The state will go through the pipes with our values. So given the same state and value, we'll get the same result.
+Here, as usual, my naive implementation of a State Monad:
+
+```typescript
+export interface State<S, A> {
+	runWith: (s: S) => [S, A]
+	chain: <B>(st: (a: A) => State<S, B>) => State<S, B>
+	map: <B>(f: (a: A) => B) => State<S, B>
+}
+
+export const state = <S, A>(f: (s: S) => [S, A]): State<S, A> => ({
+	runWith: (s: S) => f(s),
+	chain<B>(st: (a: A) => State<S, B>) {
+		return state<S, B>(s1 => {
+			const [s2, a] = this.runWith(s1)
+			return st(a).runWith(s2)
+		})
+	},
+	map<B>(f: (a: A) => B) {
+		return state<S, B>(s1 => {
+			const [s2, a] = this.runWith(s1)
+			return [s2, f(a)]
+		})
+	},
+})
+```
+
+We have almost an Applicative since we hold a function. But this function has this particular signature: `state => [state, A]`. Now, we return a pair of our state and value.
+
+You pile up functions and then, in the end, call `runWith` and pass the initial value.
+
+```typescript
+const initialState = true
+
+const state = state<boolean, number>(st => [st, 50])
+const process1 = (x: number) => x * 10
+const process2 = (x: number) =>
+	state<boolean, Either<string, number>>(st =>
+		st
+			? [st, either<string, number>(undefined, x + 50)]
+			: [st, either<string, number>('error')]
+	)
+const process3 = (x: number) => x + 10
+
+const x = state
+	.map(process1)
+	.chain(process2)
+	.map(e => e.map(process3))
+	.runWith(initialState)[1]
+	.fold(
+		x => x,
+		x => x
+	)
+
+// x = 560 (50 -> 500 -> 550 -> 560)
+```
+
+In this case, we composed some functions, including a function that returns `Either<string, number>`.
+
+It's quite elegant solution. In our example, we did not change the state, but it's possible with the `chain` method.
 
 ## Work in progress...
 
