@@ -20,7 +20,7 @@ Now that I pointed you to people who know what they're talking about, I'm free t
 
 - [A naive approach to functional programming](#a-naive-approach-to-functional-programming)
   - [Some real functional programming content](#some-real-functional-programming-content)
-  - [What?! Why?!](#what?!-why?!)
+  - [What?! Why?!](#what-why)
   - [Composition](#composition)
     - [Associativity](#associativity)
     - [Identity](#identity)
@@ -31,7 +31,7 @@ Now that I pointed you to people who know what they're talking about, I'm free t
   - [Natural Transformation](#natural-transformation)
   - [Isomorphism](#isomorphism)
   - [Higher Kinded Types](#higher-kinded-types)
-  - [I/O](#i/o)
+  - [I/O](#io)
   - [Algebraic Data Types](#algebraic-data-types)
     - [Products/Conjunctions - pairs, tuples, records](#products-conjunctions---pairs--tuples--records)
     - [Sums/Alternatives - Either](#sums-alternatives---either)
