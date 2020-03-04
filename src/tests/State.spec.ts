@@ -1,5 +1,4 @@
 import { state } from '../State'
-import { either, Either } from '../Either'
 // Testing Laws:
 
 const initialState = 10
@@ -54,7 +53,7 @@ describe('State', () => {
 	it('should preserve identity', () => {
 		expect(identityTest).toBe(true)
 	})
-	it('should chaincorrectly', () => {
+	it('should chain correctly', () => {
 		expect(chainTest).toBe(true)
 	})
 })

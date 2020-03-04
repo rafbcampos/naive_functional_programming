@@ -38,6 +38,7 @@ Now that I pointed you to people who know what they're talking about, I'm free t
     - [Exponentials/Implication - Function types](#exponentials-implication---function-types)
     - [Unit/Truth - Void](#unit-truth---void)
   - [State Monad](#state-monad)
+  - [Reader Monad](#reader-monad)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -606,6 +607,60 @@ const x = state
 In this case, we composed some functions, including a function that returns `Either<string, number>`.
 
 It's quite elegant solution. In our example, we did not change the state, but it's possible with the `chain` method.
+
+## Reader Monad
+
+In addition to states, our functions may need configuration. For these cases, we use the Reader Monad.
+
+The good news is that since we already created the State Monad, we almost have the Reader Monad, with a little gotcha, we need to prevent the config change.
+
+So our naive implementation would be:
+
+```typescript
+export interface Reader<C, A> {
+	addConfig: (c: C) => [C, A]
+	chain: <B>(st: (a: A) => Reader<C, B>) => Reader<C, B>
+	map: <B>(f: (a: A) => B) => Reader<C, B>
+}
+
+export const reader = <C, A>(f: (c: C) => [C, A]): Reader<C, A> => ({
+	addConfig: (c: C) => f(c),
+	chain<B>(r: (a: A) => Reader<C, B>) {
+		return reader<C, B>(c => {
+			const [_, a] = this.addConfig(c)
+			return r(a).addConfig(c)
+		})
+	},
+	map<B>(f: (a: A) => B) {
+		return reader<C, B>(c => {
+			const [_, a] = this.addConfig(c)
+			return [c, f(a)]
+		})
+	},
+})
+```
+
+As we can see, in the `chain` method, I'm ignoring the config that cames from the first Reader (`[_, a]`), and using the first one. That way, even if the user changes the config by mistake, we stick with the original.
+
+And, of course, our super contrived example:
+
+```typescript
+const config = { env: 'development' }
+type Config = typeof config
+const withConfig = (c: Config): [Config, number] => [
+	c,
+	c.env === 'development' ? 10 : 0,
+]
+const f = (x: number) => x * 10
+const g = (x: number) => x - 10
+
+reader<Config, number>(withConfig)
+	.map(f)
+	.map(g)
+	.addConfig(config)
+
+// env === 'development' -> 10 -> 100 -> 90
+```
 
 ## Work in progress...
 
