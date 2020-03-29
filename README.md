@@ -39,6 +39,7 @@ Now that I pointed you to people who know what they're talking about, I'm free t
     - [Unit/Truth - Void](#unit-truth---void)
   - [State Monad](#state-monad)
   - [Reader Monad](#reader-monad)
+  - [Pattern Matching](#pattern-matching)
   - [Contributing](#contributing)
   - [License](#license)
 
@@ -67,10 +68,10 @@ The most common graphic representation we get when we start to search for Catego
 If we have a function from A to B and another one from B to C, we must have a function A to C:
 
 ```typescript
-const f = (x: string) => x.length > 0
-const g = (x: boolean) => (x ? 1 : 0)
+const f = (x: string) => x.length > 0;
+const g = (x: boolean) => (x ? 1 : 0);
 // Composing g after f:
-const h = (x: string) => g(f(x))
+const h = (x: string) => g(f(x));
 ```
 
 And there is some laws:
@@ -80,9 +81,9 @@ And there is some laws:
 Taking:
 
 ```typescript
-type f = <A, B>(x: A) => B
-type g = <B, C>(x: B) => C
-type h = <C, D>(x: C) => D
+type f = <A, B>(x: A) => B;
+type g = <B, C>(x: B) => C;
+type h = <C, D>(x: C) => D;
 ```
 
 We have: `h . (g . f) == (h . g) . f == h . g . f`
@@ -145,18 +146,18 @@ First, let's define our Identity Functor:
 
 ```typescript
 interface Identity<A> {
-	map: <B>(f: (x: A) => B) => Identity<B>
-	chain: <B>(f: (x: A) => Identity<B>) => Identity<B>
-	fold: <B>(f: (x: A) => B) => B
-	inspect: () => string
+  map: <B>(f: (x: A) => B) => Identity<B>;
+  chain: <B>(f: (x: A) => Identity<B>) => Identity<B>;
+  fold: <B>(f: (x: A) => B) => B;
+  inspect: () => string;
 }
 
 const identity = <A>(value: A): Identity<A> => ({
-	map: <B>(f: (x: A) => B) => identity<B>(f(value)),
-	chain: <B>(f: (x: A) => Identity<B>) => f(value),
-	fold: <B>(f: (x: A) => B) => f(value),
-	inspect: () => `Identity(${value})`,
-})
+  map: <B>(f: (x: A) => B) => identity<B>(f(value)),
+  chain: <B>(f: (x: A) => Identity<B>) => f(value),
+  fold: <B>(f: (x: A) => B) => f(value),
+  inspect: () => `Identity(${value})`
+});
 ```
 
 There are five methods here:
@@ -184,21 +185,21 @@ Here we have functions that can return two different things, and we have a funct
 
 ```typescript
 interface Either<L, R> {
-	map: <B>(f: (x: R) => B) => Either<L, B>
-	chain: <B, C>(f: (x: R) => Either<B, C>) => Either<L, R> | Either<B, C>
-	fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) => B | C
-	inspect: () => string
+  map: <B>(f: (x: R) => B) => Either<L, B>;
+  chain: <B, C>(f: (x: R) => Either<B, C>) => Either<L, R> | Either<B, C>;
+  fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) => B | C;
+  inspect: () => string;
 }
 
 const either = <L, R>(left?: L, right?: R): Either<L, R> => ({
-	map: <B>(f: (x: R) => B) =>
-		exist(right) ? either<L, B>(undefined, f(right as R)) : either<L, B>(left),
-	chain: <B, C>(f: (x: R) => Either<B, C>) =>
-		exist(right) ? f(right as R) : either<L, R>(left),
-	fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) =>
-		exist(right) ? onRight(right as R) : onLeft(left as L),
-	inspect: () => (exist(right) ? `Right(${right})` : `Left(${left})`),
-})
+  map: <B>(f: (x: R) => B) =>
+    exist(right) ? either<L, B>(undefined, f(right as R)) : either<L, B>(left),
+  chain: <B, C>(f: (x: R) => Either<B, C>) =>
+    exist(right) ? f(right as R) : either<L, R>(left),
+  fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) =>
+    exist(right) ? onRight(right as R) : onLeft(left as L),
+  inspect: () => (exist(right) ? `Right(${right})` : `Left(${left})`)
+});
 ```
 
 That serves to handle errors, if some pops up, we skip the other steps in our chain. But also for skipping unnecessary computation, imagine that we have three predicates, but we only need one to be true to pass to the next step. If the first one returns true, we don't need to compute the next two, we skip them and move on in our pipe.
@@ -219,46 +220,46 @@ Typing that with TypeScript end up being impossible for me (TypeScript does not 
 
 ```typescript
 interface Applicative<A, B> {
-	ap: (i: Identity<A>) => Identity<B>
+  ap: (i: Identity<A>) => Identity<B>;
 }
 
 interface Applicative2<A, B, C> {
-	ap: (i: Identity<A>) => Applicative<B, C>
+  ap: (i: Identity<A>) => Applicative<B, C>;
 }
 
 interface Applicative3<A, B, C, D> {
-	ap: (i: Identity<A>) => Applicative2<B, C, D>
+  ap: (i: Identity<A>) => Applicative2<B, C, D>;
 }
 
 const applicative = <A, B>(value: (x: A) => B): Applicative<A, B> => ({
-	ap: (i: Identity<A>) => i.map(value),
-})
+  ap: (i: Identity<A>) => i.map(value)
+});
 
 const applicative2 = <A, B, C>(
-	value: (x: A) => (y: B) => C
+  value: (x: A) => (y: B) => C
 ): Applicative2<A, B, C> => ({
-	ap: (i: Identity<A>) => applicative<B, C>(i.fold(value)),
-})
+  ap: (i: Identity<A>) => applicative<B, C>(i.fold(value))
+});
 
 const applicative3 = <A, B, C, D>(
-	value: (x: A) => (y: B) => (z: C) => D
+  value: (x: A) => (y: B) => (z: C) => D
 ): Applicative3<A, B, C, D> => ({
-	ap: (i: Identity<A>) => applicative2<B, C, D>(i.fold(value)),
-})
+  ap: (i: Identity<A>) => applicative2<B, C, D>(i.fold(value))
+});
 ```
 
 Applicative Functors are not only about currying but also they help us parallelism. In a case where we have a couple of fetch calls, and we wrap them in a functor:
 
 ```typescript
 const synchronousLongTask = () => {
-	// ...
-	return identity('txt')
-}
+  // ...
+  return identity("txt");
+};
 
 // sequential:
 synchronousLongTask().chain(t1 =>
-	synchronousLongTask().map(t2 => synchronousLongTask().map(t3 => t1 + t2 + t3))
-)
+  synchronousLongTask().map(t2 => synchronousLongTask().map(t3 => t1 + t2 + t3))
+);
 
 // We have this waterfall effect, where we need to wait for the first `synchronousLongTask`
 // return to call the next one and so on.
@@ -267,12 +268,12 @@ synchronousLongTask().chain(t1 =>
 // They can be called in parallel:
 
 const composeTxt = (txt1: string) => (txt2: string) => (txt3: string) =>
-	txt1 + txt2 + txt3
+  txt1 + txt2 + txt3;
 
 applicative3(composeTxt)
-	.ap(synchronousLongTask())
-	.ap(synchronousLongTask())
-	.ap(synchronousLongTask())
+  .ap(synchronousLongTask())
+  .ap(synchronousLongTask())
+  .ap(synchronousLongTask());
 ```
 
 ## Natural Transformation
@@ -283,7 +284,7 @@ Let's use our Identity and Either:
 
 ```typescript
 const identityToEither = <A>(i: Identity<A>) =>
-	i.fold(x => either<undefined, A>(undefined, x))
+  i.fold(x => either<undefined, A>(undefined, x));
 ```
 
 In this point we already know that we need to respect some law to fit in the predictable Category world:
@@ -294,8 +295,8 @@ So, we need to put our function to the test:
 
 ```typescript
 identityToEither(identity(10))
-	.map(x => x * x)
-	.inspect() === identityToEither(identity(10).map(x => x * x)).inspect()
+  .map(x => x * x)
+  .inspect() === identityToEither(identity(10).map(x => x * x)).inspect();
 
 // true (fireworks)
 ```
@@ -333,14 +334,14 @@ In this case, **they are no equal, but isomorphic**. We can map `a -> b` and `b 
 I guess an example it's better than all my gibresh:
 
 ```typescript
-const insert = x => [x]
-const extract = a => a[0]
+const insert = x => [x];
+const extract = a => a[0];
 
-const start = 10
-const advanceOneSpace = insert(start)
-const goBackOneSpace = extract(advanceOneSpace)
+const start = 10;
+const advanceOneSpace = insert(start);
+const goBackOneSpace = extract(advanceOneSpace);
 
-start === goBackOneSpace // True - I guess we're a stuck in this Monopoly game.
+start === goBackOneSpace; // True - I guess we're a stuck in this Monopoly game.
 ```
 
 That gives us the ability to use a natural transformation to temporarily put our value in another Functor, solve a task that suits its peculiarities, and then put it back into the original Functor.
@@ -360,30 +361,30 @@ So now we have a Record of types. We can define them using HKT<[Identifier], [Ty
 
 // Unique type:
 export interface URI2HKT<A> {}
-export type URIS = keyof URI2HKT<any>
-export type HKT<URI extends URIS, A> = URI2HKT<A>[URI]
+export type URIS = keyof URI2HKT<any>;
+export type HKT<URI extends URIS, A> = URI2HKT<A>[URI];
 
 // A | B:
 export interface URI2HKT2<A, B> {}
-export type URIS2 = keyof URI2HKT2<any, any>
-export type HKT2<URI extends URIS2, A, B> = URI2HKT2<A, B>[URI]
+export type URIS2 = keyof URI2HKT2<any, any>;
+export type HKT2<URI extends URIS2, A, B> = URI2HKT2<A, B>[URI];
 ```
 
 Like gcanti show in his Medium, I'm using [Module Augmentation](https://www.typescriptlang.org/docs/handbook/declaration-merging.html#module-augmentation) to add each one of my functors:
 
 ```typescript
 // src/Identity.ts:
-declare module './HKT' {
-	interface URI2HKT<A> {
-		Identity: Identity<A>
-	}
+declare module "./HKT" {
+  interface URI2HKT<A> {
+    Identity: Identity<A>;
+  }
 }
 
 // src/Either.ts:
-declare module './HKT' {
-	interface URI2HKT2<A, B> {
-		Either: Either<A, B>
-	}
+declare module "./HKT" {
+  interface URI2HKT2<A, B> {
+    Either: Either<A, B>;
+  }
 }
 ```
 
@@ -392,21 +393,21 @@ With that, I changed my first version of Applicative, that only can handle Ident
 ```typescript
 // src/Applicative.ts:
 export interface Applicative<A, B> {
-	ap: <F extends URIS>(fa: HKT<F, A>) => HKT<F, B>
+  ap: <F extends URIS>(fa: HKT<F, A>) => HKT<F, B>;
 }
 
 export const applicative = <A, B>(value: (x: A) => B): Applicative<A, B> => ({
-	ap: <F extends URIS>(fa: HKT<F, A>) => fa.map(value),
-})
+  ap: <F extends URIS>(fa: HKT<F, A>) => fa.map(value)
+});
 
 // src/Applicative2.ts:
 export interface Applicative2<A, B> {
-	ap: <F extends URIS2, L>(fea: HKT2<F, L, A>) => HKT2<F, L, B>
+  ap: <F extends URIS2, L>(fea: HKT2<F, L, A>) => HKT2<F, L, B>;
 }
 
 export const applicative2 = <A, B>(value: (x: A) => B): Applicative2<A, B> => ({
-	ap: <F extends URIS2, L>(fea: HKT2<F, L, A>) => fea.map(value),
-})
+  ap: <F extends URIS2, L>(fea: HKT2<F, L, A>) => fea.map(value)
+});
 ```
 
 ## I/O
@@ -424,7 +425,7 @@ In this [video](https://www.youtube.com/watch?v=fCoQb-zqYDI), Tsoding reimplemen
 Maybe we should change or perspective over the problem. Would a function that receives the state of the World and returns the state of the World be pure?
 
 ```typescript
-type IO = <World>(w: World) => World
+type IO = <World>(w: World) => World;
 ```
 
 ![math](https://media.giphy.com/media/26xBI73gWquCBBCDe/giphy.gif)
@@ -449,20 +450,20 @@ At the end (at least till the point I understand it), I/O is the same as creatin
 
 ```typescript
 const unsafe = (): Either<string, number> => {
-	// ex.: get user input, parse to an Int or return 'error'
-}
+  // ex.: get user input, parse to an Int or return 'error'
+};
 
 const safe = (input: Either<string, number>) => {
-	input
-		.map(x => x + 10)
-		.map(x => x * x)
-		.fold(
-			x => x,
-			x => x
-		)
-}
+  input
+    .map(x => x + 10)
+    .map(x => x * x)
+    .fold(
+      x => x,
+      x => x
+    );
+};
 
-safe(unsafe())
+safe(unsafe());
 ```
 
 ## Algebraic Data Types
@@ -491,9 +492,9 @@ Taking a Pair, as an example, we need two values to create it (intoduction), and
 
 ```typescript
 const pair = <A, B>(a: A) => (b: B) => ({
-	first: a,
-	second: b,
-})
+  first: a,
+  second: b
+});
 ```
 
 ### Sums/Alternatives - Either
@@ -501,14 +502,14 @@ const pair = <A, B>(a: A) => (b: B) => ({
 Here we have a union type: `A|B`. We can introduce using our naive `either` implementation:
 
 ```typescript
-const x = either<string, number>(undefined, 10)
-const y = either<string, number>('error')
+const x = either<string, number>(undefined, 10);
+const y = either<string, number>("error");
 ```
 
 And to eliminate/use it we have the `fold` method:
 
 ```typescript
-x.fold(console.error, console.log)
+x.fold(console.error, console.log);
 ```
 
 ### Exponentials/Implication - Function types
@@ -528,7 +529,7 @@ Scalar types (string, number, boolean) compose in more complex data types, like 
 Algebraic data types are ways to compose types, embeded with algebra laws, that can help us solve complex cases like define List recursively as:
 
 ```typescript
-type List<T> = void | { head: T; tail: List<T> }
+type List<T> = void | { head: T; tail: List<T> };
 ```
 
 Which makes sense for a lazily evaluated language as Haskell.
@@ -552,26 +553,26 @@ Here, as usual, my naive implementation of a State Monad:
 
 ```typescript
 export interface State<S, A> {
-	runWith: (s: S) => [S, A]
-	chain: <B>(st: (a: A) => State<S, B>) => State<S, B>
-	map: <B>(f: (a: A) => B) => State<S, B>
+  runWith: (s: S) => [S, A];
+  chain: <B>(st: (a: A) => State<S, B>) => State<S, B>;
+  map: <B>(f: (a: A) => B) => State<S, B>;
 }
 
 export const state = <S, A>(f: (s: S) => [S, A]): State<S, A> => ({
-	runWith: (s: S) => f(s),
-	chain<B>(st: (a: A) => State<S, B>) {
-		return state<S, B>(s1 => {
-			const [s2, a] = this.runWith(s1)
-			return st(a).runWith(s2)
-		})
-	},
-	map<B>(f: (a: A) => B) {
-		return state<S, B>(s1 => {
-			const [s2, a] = this.runWith(s1)
-			return [s2, f(a)]
-		})
-	},
-})
+  runWith: (s: S) => f(s),
+  chain<B>(st: (a: A) => State<S, B>) {
+    return state<S, B>(s1 => {
+      const [s2, a] = this.runWith(s1);
+      return st(a).runWith(s2);
+    });
+  },
+  map<B>(f: (a: A) => B) {
+    return state<S, B>(s1 => {
+      const [s2, a] = this.runWith(s1);
+      return [s2, f(a)];
+    });
+  }
+});
 ```
 
 We have almost an Applicative since we hold a function. But this function has this particular signature: `state => [state, A]`. Now, we return a pair of our state and value.
@@ -579,27 +580,27 @@ We have almost an Applicative since we hold a function. But this function has th
 You pile up functions and then, in the end, call `runWith` and pass the initial value.
 
 ```typescript
-const initialState = true
+const initialState = true;
 
-const state = state<boolean, number>(st => [st, 50])
-const process1 = (x: number) => x * 10
+const state = state<boolean, number>(st => [st, 50]);
+const process1 = (x: number) => x * 10;
 const process2 = (x: number) =>
-	state<boolean, Either<string, number>>(st =>
-		st
-			? [st, either<string, number>(undefined, x + 50)]
-			: [st, either<string, number>('error')]
-	)
-const process3 = (x: number) => x + 10
+  state<boolean, Either<string, number>>(st =>
+    st
+      ? [st, either<string, number>(undefined, x + 50)]
+      : [st, either<string, number>("error")]
+  );
+const process3 = (x: number) => x + 10;
 
 const x = state
-	.map(process1)
-	.chain(process2)
-	.map(e => e.map(process3))
-	.runWith(initialState)[1]
-	.fold(
-		x => x,
-		x => x
-	)
+  .map(process1)
+  .chain(process2)
+  .map(e => e.map(process3))
+  .runWith(initialState)[1]
+  .fold(
+    x => x,
+    x => x
+  );
 
 // x = 560 (50 -> 500 -> 550 -> 560)
 ```
@@ -618,26 +619,26 @@ So our naive implementation would be:
 
 ```typescript
 export interface Reader<C, A> {
-	addConfig: (c: C) => [C, A]
-	chain: <B>(st: (a: A) => Reader<C, B>) => Reader<C, B>
-	map: <B>(f: (a: A) => B) => Reader<C, B>
+  addConfig: (c: C) => [C, A];
+  chain: <B>(st: (a: A) => Reader<C, B>) => Reader<C, B>;
+  map: <B>(f: (a: A) => B) => Reader<C, B>;
 }
 
 export const reader = <C, A>(f: (c: C) => [C, A]): Reader<C, A> => ({
-	addConfig: (c: C) => f(c),
-	chain<B>(r: (a: A) => Reader<C, B>) {
-		return reader<C, B>(c => {
-			const [_, a] = this.addConfig(c)
-			return r(a).addConfig(c)
-		})
-	},
-	map<B>(f: (a: A) => B) {
-		return reader<C, B>(c => {
-			const [_, a] = this.addConfig(c)
-			return [c, f(a)]
-		})
-	},
-})
+  addConfig: (c: C) => f(c),
+  chain<B>(r: (a: A) => Reader<C, B>) {
+    return reader<C, B>(c => {
+      const [_, a] = this.addConfig(c);
+      return r(a).addConfig(c);
+    });
+  },
+  map<B>(f: (a: A) => B) {
+    return reader<C, B>(c => {
+      const [_, a] = this.addConfig(c);
+      return [c, f(a)];
+    });
+  }
+});
 ```
 
 As we can see, in the `chain` method, I'm ignoring the config that cames from the first Reader (`[_, a]`), and using the first one. That way, even if the user changes the config by mistake, we stick with the original.
@@ -645,32 +646,87 @@ As we can see, in the `chain` method, I'm ignoring the config that cames from th
 And, of course, our super contrived example:
 
 ```typescript
-const config = { env: 'development' }
-type Config = typeof config
+const config = { env: "development" };
+type Config = typeof config;
 const withConfig = (c: Config): [Config, number] => [
-	c,
-	c.env === 'development' ? 10 : 0,
-]
-const f = (x: number) => x * 10
-const g = (x: number) => x - 10
+  c,
+  c.env === "development" ? 10 : 0
+];
+const f = (x: number) => x * 10;
+const g = (x: number) => x - 10;
 
 reader<Config, number>(withConfig)
-	.map(f)
-	.map(g)
-	.addConfig(config)
+  .map(f)
+  .map(g)
+  .addConfig(config);
 
 // env === 'development' -> 10 -> 100 -> 90
 ```
 
-## Work in progress...
+## Pattern Matching
+
+I was researching about pattern matching and found an incredible [article](https://medium.com/swlh/pattern-matching-in-typescript-with-record-and-wildcard-patterns-6097dd4e471d) and [lib](https://github.com/WimJongeneel/ts-pattern-matching) written by Wim Jongeneel.
+
+He uses a lot of TS features that are new to me. Here another cool [article](https://dev.to/aexol/typescript-tutorial-infer-keyword-2cn) from Artur Czemiel explaining the `infer` and conditional types.
+
+With that, I rewrote the Either to use pattern matching:
+
+```typescript
+ype EitherValue<L, R> = { tag: "left"; value: L } | { tag: "right"; value: R };
+
+export interface Right<L, R> {
+  map: <B>(f: (x: R) => B) => Right<L, B>;
+  chain: <B>(f: (x: R) => Right<L, B>) => Right<L, B>;
+  fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) => B | C;
+  inspect: () => string;
+}
+
+export interface Left<L, R> {
+  map: <B>(f: (x: R) => B) => Left<L, B>;
+  chain: <B>(f: (x: R) => Left<L, B>) => Left<L, B>;
+  fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) => B | C;
+  inspect: () => string;
+}
+
+const right = <L, R>(value: R): Right<L, R> => ({
+  map: <B>(f: (x: R) => B) => right<L, B>(f(value)),
+  chain: <B>(f: (x: R) => Right<L, B>) => f(value),
+  fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) => onRight(value),
+  inspect: () => `Right(${value})`
+});
+
+const left = <L, R>(value: L): Left<L, R> => ({
+  map: <B>(_: (x: R) => B) => left<L, B>(value),
+  chain: <B>(_: (x: R) => Right<L, B>) => left<L, B>(value),
+  fold: <B, C>(onLeft: (x: L) => B, onRight: (x: R) => C) => onLeft(value),
+  inspect: () => `Left(${value})`
+});
+
+export type Either<L, R> = Right<L, R> | Left<L, R>;
+
+export const either = <L, R>(
+  taggedValue: EitherValue<L, R>
+): Left<L, R> | Right<L, R> =>
+  match<EitherValue<L, R>, Right<L, R> | Left<L, R>>(taggedValue)
+    .with({ tag: "left" }, ({ tag, value }) => left<L, R>(value))
+    .with({ tag: "right" }, ({ tag, value }) => right<L, R>(value))
+    .run();
+```
+
+There still a ton to TS stuff I need to learn. Conditional typing can improve our sum types, so stay tuned for more refactor soon.
+
+## Work in progress
+
+This repo is a journal of my learning process though the land of Functional Programing and TypeScript.
+All help is welcome, so feel free to propose code improvements, fixes, and more material to learn.
 
 ## Contributing
 
-1.  Fork it!
-2.  Create your feature branch: git checkout -b my-new-feature
-3.  Commit your changes: git commit -am 'Add some feature'
-4.  Push to the branch: git push origin my-new-feature
-5.  Submit a pull request :D
+1. Fork it!
+2. Create your feature branch: git checkout -b my-new-feature
+3. Commit your changes: git commit -am 'Add some feature'
+4. Push to the branch: git push origin my-new-feature
+5. Submit a pull request :D
 
 ## License
 

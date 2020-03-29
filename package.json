@@ -12,6 +12,7 @@
 		"babel-jest": "^25.1.0",
 		"jest": "^25.1.0",
 		"ts-node": "^8.6.2",
-		"typescript": "^3.7.5"
+		"typescript": "^3.7.5",
+		"typescript-pattern-matching": "^1.0.1"
 	}
 }
